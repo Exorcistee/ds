@@ -1,28 +1,51 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Valuator.Pages;
+using StackExchange.Redis;
+using System;
 
-namespace Valuator.Pages;
-public class SummaryModel : PageModel
+namespace Valuator.Pages
 {
-    private readonly ILogger<SummaryModel> _logger;
-
-    public SummaryModel(ILogger<SummaryModel> logger)
+    public class SummaryModel : PageModel
     {
-        _logger = logger;
-    }
+        private readonly ILogger<SummaryModel> _logger;
+        private readonly IConnectionMultiplexer _redis;
 
-    public double Rank { get; set; }
-    public double Similarity { get; set; }
+        public SummaryModel(ILogger<SummaryModel> logger, IConnectionMultiplexer redis)
+        {
+            _logger = logger;
+            _redis = redis;
+        }
 
-    public void OnGet(string id)
-    {
-        _logger.LogDebug(id);
+        public double Rank { get; set; }
+        public double Similarity { get; set; }
 
-        // TODO: (pa1) проинициализировать свойства Rank и Similarity значениями из БД (Redis)
+        public void OnGet(string id)
+        {
+            _logger.LogDebug(id);
+
+            IDatabase db = _redis.GetDatabase();
+            RedisValue rankValue = db.StringGet($"RANK-{id}");
+            RedisValue similarityValue = db.StringGet($"SIMILARITY-{id}");
+
+            if (rankValue.HasValue)
+            {
+                Rank = (double)rankValue;
+            }
+            else
+            {
+                Rank = 0;
+            }
+
+            if (similarityValue.HasValue)
+            {
+                Similarity = (double)similarityValue;
+            }
+            else
+            {
+                Similarity = 0;
+            }
+
+        }
     }
 }
