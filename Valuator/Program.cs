@@ -11,7 +11,7 @@ public class Program
         // Add services to the container.
         builder.Services.AddRazorPages();
 
-        // Подключение к Redis
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ Redis
         builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost:6379"));
 
         var app = builder.Build();

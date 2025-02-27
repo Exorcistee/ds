@@ -22,6 +22,12 @@ public class IndexModel : PageModel
 
     public IActionResult OnPost(string text)
     {
+
+        if (string.IsNullOrEmpty(text))
+        {
+            return Redirect("index");
+        }
+
         _logger.LogDebug(text);
 
         string id = Guid.NewGuid().ToString();
@@ -60,7 +66,7 @@ public class IndexModel : PageModel
             }
         }
 
-        return Math.Round(count / text.Length, 2, MidpointRounding.AwayFromZero);
+        return Math.Round(1 - count / text.Length, 2, MidpointRounding.AwayFromZero);
     }
 
     private double CalculateSimilarity(string text, IDatabase db)
