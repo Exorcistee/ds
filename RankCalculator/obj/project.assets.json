@@ -18,7 +18,7 @@
           "buildTransitive/netcoreapp3.1/_._": {}
         }
       },
-      "NATS.Client/1.1.4": {
+      "NATS.Client/1.1.7": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/NATS.Client.dll": {
@@ -132,20 +132,16 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "NATS.Client/1.1.4": {
-      "sha512": "lcMgs/aNBr+N7vRek35Itk/fs7UmyQSVtfGyQPKA5Oh8Olg+0L4XHuI98d2euF3E2bet9KKADYesW/OAEmA6VQ==",
+    "NATS.Client/1.1.7": {
+      "sha512": "tD2mEjY6w5kloqFfIjs/2v40DU7PWuxL8GdVsZIHchnqhdKKFVk+a72uV6EB6tdROCGv5wbDnaY4xZC/UYM8gg==",
       "type": "package",
-      "path": "nats.client/1.1.4",
+      "path": "nats.client/1.1.7",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "lib/net46/NATS.Client.dll",
-        "lib/net46/NATS.Client.xml",
-        "lib/netstandard1.6/NATS.Client.dll",
-        "lib/netstandard1.6/NATS.Client.xml",
         "lib/netstandard2.0/NATS.Client.dll",
         "lib/netstandard2.0/NATS.Client.xml",
-        "nats.client.1.1.4.nupkg.sha512",
+        "nats.client.1.1.7.nupkg.sha512",
         "nats.client.nuspec",
         "package-icon.png"
       ]
@@ -223,7 +219,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
-      "NATS.Client >= 1.1.4",
+      "NATS.Client >= 1.1.7",
       "StackExchange.Redis >= 2.7.33"
     ]
   },
@@ -279,7 +275,7 @@
         "dependencies": {
           "NATS.Client": {
             "target": "Package",
-            "version": "[1.1.4, )"
+            "version": "[1.1.7, )"
           },
           "StackExchange.Redis": {
             "target": "Package",

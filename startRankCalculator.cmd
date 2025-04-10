@@ -1,3 +1,3 @@
 @echo off
-cd ..\RankCalculator\
+cd RankCalculator\
 start dotnet run

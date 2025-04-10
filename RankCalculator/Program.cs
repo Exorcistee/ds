@@ -15,7 +15,9 @@ namespace RankCalculator
             IConnection c = cf.CreateConnection();
 
             var s = c.SubscribeAsync("valuator.processing.rank", "rank_calculator", (sender, args) =>
-            {
+            {   
+                //TODO: Должно выводится сообщение о расчете,если при загрузке не высчиталось
+                Thread.Sleep(10000);
                 string id = Encoding.UTF8.GetString(args.Message.Data);
 
                 string textKey = "TEXT-" + id;

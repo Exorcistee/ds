@@ -1,6 +1,6 @@
 @echo off
 cd nats-server\
-start nats-server
+start nats-server -m 8222
 
 cd ..\RankCalculator\
 start dotnet run

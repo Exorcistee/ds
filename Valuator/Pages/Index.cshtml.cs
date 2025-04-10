@@ -1,88 +1,85 @@
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using StackExchange.Redis;
-using System.Text.RegularExpressions;
+using static System.Net.Mime.MediaTypeNames;
+using NATS.Client;
+using System.Text;
 
 namespace Valuator.Pages;
 
 public class IndexModel : PageModel
 {
     private readonly ILogger<IndexModel> _logger;
-    private readonly IConnectionMultiplexer _redis;
+    private readonly IConnectionMultiplexer _redisConnection;
+    private readonly IDatabase _db;
 
-    public IndexModel(ILogger<IndexModel> logger, IConnectionMultiplexer redis)
+    public IndexModel(ILogger<IndexModel> logger, IConnectionMultiplexer redisConnection)
     {
         _logger = logger;
-        _redis = redis;
+        _redisConnection = redisConnection;
+        _db = _redisConnection.GetDatabase();
     }
 
     public void OnGet()
     {
+
     }
 
     public IActionResult OnPost(string text)
     {
-
-        if (string.IsNullOrEmpty(text))
-        {
-            return Redirect("index");
-        }
-
         _logger.LogDebug(text);
 
         string id = Guid.NewGuid().ToString();
-        string textKey = "TEXT-" + id;
 
-        var db = _redis.GetDatabase();
+        if (string.IsNullOrEmpty(text))
+        {
+            return Redirect($"index");
+        }
 
-        // Вычисление и сохранение ранга
-        string rankKey = "RANK-" + id;
-        double rank = CalculateRank(text);
-        db.StringSet(rankKey, rank);
-
-        // Проверка на похожесть
         string similarityKey = "SIMILARITY-" + id;
-        double similarity = CalculateSimilarity(text, db);
-        db.StringSet(similarityKey, similarity);
+        double similarity = CalculateSimilarity(text);
+        _db.StringSet(similarityKey, similarity);
 
-        db.StringSet(textKey, text);
+        string textKey = "TEXT-" + id;
+        _db.StringSet(textKey, text);
+
+        CancellationTokenSource cts = new CancellationTokenSource();
+
+        ConnectionFactory cf = new ConnectionFactory();
+
+        using (IConnection c = cf.CreateConnection())
+        {
+            byte[] data = Encoding.UTF8.GetBytes(id);
+            c.Publish("valuator.processing.rank", data);
+
+            c.Drain();
+
+            c.Close();
+        }
+
+        cts.Cancel();
 
         return Redirect($"summary?id={id}");
     }
 
-    private double CalculateRank(string text)   
+    private double CalculateSimilarity(string text)
     {
-        if (string.IsNullOrEmpty(text))
+        var allKeys = _redisConnection.GetServer("localhost:6379").Keys();
+        double similarity = 0.0;
+        foreach (var key in allKeys)
         {
-            return 0;
-        }
-        double count = 0;
-
-        foreach (char ch in text)
-        {
-            if (char.IsLetter(ch))
+            if (key.ToString().Substring(0, 4) != "TEXT")
             {
-                count++;
+                continue;
+            }
+            string dbText = _db.StringGet(key);
+            if (dbText == text)
+            {
+                similarity = 1.0;
             }
         }
-
-        return Math.Round(1 - count / text.Length, 2, MidpointRounding.AwayFromZero);
-    }
-
-    private double CalculateSimilarity(string text, IDatabase db)
-    {
-        IServer server = _redis.GetServer(_redis.GetEndPoints().First());
-
-        IEnumerable<RedisKey> keys = server.Keys(pattern: "TEXT-*");
-        foreach (RedisKey key in keys)
-        {
-            string existingText = db.StringGet(key);
-            if (existingText == text)
-            {
-                return 1; 
-            }
-        }
-        return 0;
+        return similarity;
     }
 }
 
